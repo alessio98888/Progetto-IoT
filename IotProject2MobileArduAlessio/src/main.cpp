@@ -163,7 +163,7 @@ void TaskUpdateMaxTempPreference( void *pvParameters)
   (void) pvParameters;
   for(;;){
     ThingPropertyValue maxTempProperty;
-    int maxTemp = random(0, 35);
+    int maxTemp = random(20, 50);
     maxTempProperty.number = maxTemp;
 
     maxTempPreference.setValue(maxTempProperty);

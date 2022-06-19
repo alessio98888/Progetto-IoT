@@ -27,6 +27,7 @@ headers["Content-Type"] = "application/json"
 dataActivate = '{"on":true}'
 dataDeactivate = '{"on":false}'
 writers = dict()
+actuatorOn = False
 TEMP_VALUE_TOPIC = "/devices/mobile/sensors/temp/value"
 TEMP_WRITER_THING_DESCRIPTION_TOPIC = "/devices/mobile/tempWriter"
 TEMP_READER_THING_DESCRIPTION_TOPIC = "/devices/mobile/tempReader"
@@ -35,6 +36,7 @@ MAX_TRIES = 5
 async def getPropertiesFromTempThing(websocketUrl):
     #global tempReadingThreadRunning
     #tempReadingThreadRunning = True
+    global actuatorOn
     actuatorOn = False
     max_tries = MAX_TRIES
     timeout = False
@@ -117,7 +119,7 @@ async def getPropertiesFromTempThing(websocketUrl):
             max_tries -= 1
             if max_tries == 0:
                 print(websocketUrl + " TIMEOUT")
-                maxTempPreferences.pop(websocketUrl)
+                maxTempPreferences.pop(str(websocketUrl))
                 writers.pop(websocketUrl)
                 timeout = True
                 break
@@ -132,6 +134,8 @@ def deactivateActuator(actuatorThingLedUrl, headers, dataDeactivate):
             resp = requests.put(actuatorThingLedUrl,
                         headers=headers,
                         data=dataDeactivate)
+                        
+            global actuatorOn
             actuatorOn = False
             print("Activation status code: ", resp.status_code)
         except:

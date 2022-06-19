@@ -1,0 +1,7 @@
+Search COntrol Panel
+Click Network->Network and Sharing Centre
+Click on Right link after "Connections:"
+Click Properties
+Click Internet Protocol Version 4 (TCP/IPv4) and then Properties
+Change IP
+Click all the OK
