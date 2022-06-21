@@ -26,8 +26,7 @@
 #define WiFiConnectAttemptDelay 10000
 #define MAX_NUMBER_FAILED_READ 3
 
-#define TEMP_THING_TOPIC "/devices/mobile/tempWriter"
-#define READ_TEMP_THING_TOPIC "/devices/mobile/tempReader"
+#define TEMP_THING_TOPIC "/devices/mobile"
 #define TEMP_VALUE_TOPIC "/devices/mobile/sensors/temp/value"
 
 
@@ -38,9 +37,8 @@ const String mDNSHostname = "weathersensor";
 WiFiClient client;
 Adafruit_MQTT_Client mqtt(&client, AIO_SERVER, AIO_SERVERPORT);
 
-Adafruit_MQTT_Publish temp_thing_publish = Adafruit_MQTT_Publish(&mqtt, TEMP_THING_TOPIC, 1);
-Adafruit_MQTT_Publish read_temp_thing_publish = Adafruit_MQTT_Publish(&mqtt, READ_TEMP_THING_TOPIC, 1);
-Adafruit_MQTT_Subscribe temp_thing_subscribe = Adafruit_MQTT_Subscribe(&mqtt, TEMP_THING_TOPIC,1);
+Adafruit_MQTT_Publish temp_thing_publish = Adafruit_MQTT_Publish(&mqtt, TEMP_THING_TOPIC);
+Adafruit_MQTT_Subscribe temp_thing_subscribe = Adafruit_MQTT_Subscribe(&mqtt, TEMP_THING_TOPIC);
 Adafruit_MQTT_Subscribe temp_value_subscribe = Adafruit_MQTT_Subscribe(&mqtt, TEMP_VALUE_TOPIC);
 // BME280 sensor (I2C)
 //Adafruit_BME280 bme280;
@@ -101,10 +99,8 @@ void setup() {
     writer = false;
   }
 
-  if(writer == false){
-    lcd.begin(16,2);
-    lcd.print("Waiting for temp");
-  }
+  lcd.begin(16,2);
+  lcd.print("Waiting for temp");
 
 
   Serial.print("Temperature Sensor");
@@ -163,7 +159,7 @@ void TaskUpdateMaxTempPreference( void *pvParameters)
   (void) pvParameters;
   for(;;){
     ThingPropertyValue maxTempProperty;
-    int maxTemp = random(20, 50);
+    int maxTemp = random(10, 50);
     maxTempProperty.number = maxTemp;
 
     maxTempPreference.setValue(maxTempProperty);
@@ -184,44 +180,40 @@ void TaskTemp( void *pvParameters )
     } 
     else {
 
-      if(writer == true){
         // Read sensor values
-        ThingPropertyValue tempProperty;
-        float readTemp = -1;
-        TempAndHumidity new_DHT11_reading = { 0.0, 0.0 };
-        new_DHT11_reading = dht.getTempAndHumidity(); // The read is thread safe
+      ThingPropertyValue tempProperty;
+      float readTemp = -1;
+      TempAndHumidity new_DHT11_reading = { 0.0, 0.0 };
+      new_DHT11_reading = dht.getTempAndHumidity(); // The read is thread safe
 
-        if ( isnan(new_DHT11_reading.temperature) != true ) {
-          readTemp = new_DHT11_reading.temperature;
-        }
-        else {
-          Serial.println("Temperature Sensor NaN");
-        }
-
-        // Print readings to console
-        #if 1
-        Serial.print("Temperature: ");
-        Serial.print(readTemp);
-        Serial.println(" C");
-        #endif
-
-        // Update device values
-        tempProperty.number = readTemp;
-        
-        sensorTemp.setValue(tempProperty);
-      } 
+      if ( isnan(new_DHT11_reading.temperature) != true ) {
+        readTemp = new_DHT11_reading.temperature;
+      }
       else {
-        // Show temp of other device to screen
-        bool received = false;
-        Adafruit_MQTT_Subscribe *subscription;
-        while ((subscription = mqtt.readSubscription(5000))) {
-          if(subscription==&temp_value_subscribe){
-            Serial.print(F("Temperature reading from writer thing: "));
-            Serial.println((char *)temp_value_subscribe.lastread);
-            lcd.begin(16, 2);
-            lcd.print((char*)temp_value_subscribe.lastread);
-            received = true;
-          }
+        Serial.println("Temperature Sensor NaN");
+      }
+
+      // Print readings to console
+      #if 1
+      Serial.print("Temperature: ");
+      Serial.print(readTemp);
+      Serial.println(" C");
+      #endif
+
+      // Update device values
+      tempProperty.number = readTemp;
+      
+      sensorTemp.setValue(tempProperty);
+      // Show temp of other device to screen
+      bool received = false;
+      Adafruit_MQTT_Subscribe *subscription;
+      while ((subscription = mqtt.readSubscription(5000))) {
+        if(subscription==&temp_value_subscribe){
+          Serial.print(F("Temperature reading from writer thing: "));
+          Serial.println((char *)temp_value_subscribe.lastread);
+          lcd.begin(16, 2);
+          lcd.print((char*)temp_value_subscribe.lastread);
+          received = true;
         }
         if (received == false) {
           numberFailedRead++;
@@ -289,8 +281,7 @@ void MQTT_connect() {
        vTaskDelay(MQTTConnectAttemptDelay / portTICK_PERIOD_MS);  // wait 5 seconds
        retries--;
        if (retries == 0) {
-         // basically die and wait for WDT to reset me
-         //while (1);
+         
          break;
        }
   }
@@ -370,30 +361,17 @@ void TaskConnect( void *pvParameters )
         writer = false;
       }
       */
-      if (writer == true) {
-        // Publish our device to be discoverable as a temperature writer
-        Serial.println("Publish this device to be discoverable as a temperature writer");
-        while (! temp_thing_publish.publish(buf)) {
-          Serial.println(F("Failed, retrying"));
-          mqtt.disconnect();
-          vTaskResume(task_handle_Connect);
-          vTaskDelay(publishAttemptDelay / portTICK_PERIOD_MS);
-        }
-      }
-      else {
-        // Publish our device to be discoverable as a temperature reader
-        Serial.println("Publish this device to be discoverable as a temperature reader");
-        while (! read_temp_thing_publish.publish(buf)) {
-          Serial.println(F("Failed, retrying"));
-          mqtt.disconnect();
-          vTaskResume(task_handle_Connect);
-          vTaskDelay(publishAttemptDelay / portTICK_PERIOD_MS);
-        }
+      // Publish our device to be discoverable as a temperature writer
+      Serial.println("Publish this device to be discoverable ");
+      while (! temp_thing_publish.publish(buf)) {
+        Serial.println(F("Failed, retrying"));
+        mqtt.disconnect();
+        vTaskResume(task_handle_Connect);
+        vTaskDelay(publishAttemptDelay / portTICK_PERIOD_MS);
       }
       
       Serial.println("Registered to MQTT Broker");
     }
-    else {}
 
     if (WiFi.status() == WL_CONNECTED and mqtt.connected() == true){
       vTaskSuspend(NULL);
