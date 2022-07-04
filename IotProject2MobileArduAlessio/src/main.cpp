@@ -182,16 +182,12 @@ void TaskTemp( void *pvParameters )
 
         // Read sensor values
       ThingPropertyValue tempProperty;
-      float readTemp = -1;
+      float readTemp;
+
       TempAndHumidity new_DHT11_reading = { 0.0, 0.0 };
       new_DHT11_reading = dht.getTempAndHumidity(); // The read is thread safe
 
-      if ( isnan(new_DHT11_reading.temperature) != true ) {
-        readTemp = new_DHT11_reading.temperature;
-      }
-      else {
-        Serial.println("Temperature Sensor NaN");
-      }
+      readTemp = new_DHT11_reading.temperature; // NaN if can't measure 
 
       // Print readings to console
       #if 1
@@ -231,14 +227,7 @@ void TaskTemp( void *pvParameters )
       // Update all properties and events over the connection
       adapter->update();
 
-/*
-      int retries = publishRetries; 
-      while (! max_temp_publish.publish(maxTemp) && retries > 0) {
-        Serial.println(F("Failed pub max temperature, retrying"));
-        retries--;
-        vTaskDelay(publishAttemptDelay / portTICK_PERIOD_MS);
-      }
-    */
+
     }
     vTaskDelay(tempReadingPeriod / portTICK_PERIOD_MS);
   }
@@ -304,7 +293,6 @@ void TaskConnect( void *pvParameters )
 
   for(;;)
   {
-    //digitalWrite(connectionLED, LOW);
 
     if (WiFi.status() != WL_CONNECTED)
     {
@@ -352,15 +340,7 @@ void TaskConnect( void *pvParameters )
       char buf[256];
       serializeJson(doc, buf);
     
-     // Check if another temp thing has subscribed before
-     /*
-      Adafruit_MQTT_Subscribe *subscription;
-      bool tempThingAlreadyPresent = false;
-      while ((subscription = mqtt.readSubscription(5000))) {
-        if(subscription == &temp_thing_publish)
-        writer = false;
-      }
-      */
+     
       // Publish our device to be discoverable as a temperature writer
       Serial.println("Publish this device to be discoverable ");
       while (! temp_thing_publish.publish(buf)) {

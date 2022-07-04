@@ -61,8 +61,10 @@ async def mainThread():
                         tempFromThingMessage = await websocket.recv()
                         tempFromThingDict = json.loads(str(tempFromThingMessage))
 
-                        tempFromThingFloat = float(tempFromThingDict["data"]["temp"])
-                        if tempFromThingFloat != -1 and not tempWriterPreviouslyFound:
+                        tempFromThingFloat = (tempFromThingDict["data"]["temp"])
+                        if tempFromThingFloat != None:
+                            tempFromThingFloat = round(float(tempFromThingFloat),2)
+                        if tempFromThingFloat is not None and not tempWriterPreviouslyFound:
                             canExecAsTempWriter = True
                             tempWriterPreviouslyFound = True
 
