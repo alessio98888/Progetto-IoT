@@ -9,8 +9,9 @@
 //const char *ssid = "AndroidAPA160";
 //const char *password = "ctca0738"; 
 
-const char *ssid = "TIM-22481143";
-const char *password = "m1K0GCAWoEosJQev6jiBQz55"; 
+//const char *ssid = "TIM-22481143";
+//const char *password = "m1K0GCAWoEosJQev6jiBQz55"; 
 
-
+const char *ssid = "MORE-IOT";
+const char *password = "MORE-IOT-PWD"; 
 #endif

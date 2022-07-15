@@ -8,7 +8,7 @@
   #define ARDUINO_RUNNING_CORE 1
 #endif
 /**** MQTT ****/
-#define AIO_SERVER      "192.168.1.81"
+#define AIO_SERVER      "192.168.0.81"
 #define AIO_SERVERPORT  1883                   // use 8883 for SSL
 #define MAX_CONNECTION_ATTEMPTS 5
 #define MQTTConnectAttemptDelay 5000

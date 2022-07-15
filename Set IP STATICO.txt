@@ -5,3 +5,6 @@ Click Properties
 Click Internet Protocol Version 4 (TCP/IPv4) and then Properties
 Change IP
 Click all the OK
+
+
+ipconfig /all per vedere il default gateway appena ti connetti al more iot
