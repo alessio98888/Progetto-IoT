@@ -37,7 +37,7 @@ const String mDNSHostname = "weathersensor";
 WiFiClient client;
 Adafruit_MQTT_Client mqtt(&client, AIO_SERVER, AIO_SERVERPORT);
 
-Adafruit_MQTT_Publish temp_thing_publish = Adafruit_MQTT_Publish(&mqtt, TEMP_THING_TOPIC);
+Adafruit_MQTT_Publish temp_thing_publish = Adafruit_MQTT_Publish(&mqtt, TEMP_THING_TOPIC, 1);
 Adafruit_MQTT_Subscribe temp_thing_subscribe = Adafruit_MQTT_Subscribe(&mqtt, TEMP_THING_TOPIC);
 Adafruit_MQTT_Subscribe temp_value_subscribe = Adafruit_MQTT_Subscribe(&mqtt, TEMP_VALUE_TOPIC);
 // BME280 sensor (I2C)
